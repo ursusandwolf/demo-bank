@@ -2,8 +2,9 @@
 
 ## Current State
 - **Iteration 0** completed: Project skeleton initialized.
-- Tech Stack: Java 21, Spring Boot 3.3.0, PostgreSQL, Liquibase, Maven.
+- Tech Stack: Java 21, Spring Boot 3.3.0, PostgreSQL, Liquibase, Maven, Docker Compose.
 - Implemented a public health endpoint and global exception handling.
+- Added `docker-compose.yml` for local database setup.
 - Basic test suite is in place and passing.
 
 ## Pending Items
