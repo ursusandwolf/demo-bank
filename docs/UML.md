@@ -10,4 +10,8 @@ com.example.bank
 │   │   └── GlobalExceptionHandler
 │   └── health
 │       └── HealthController
+├── auth
+│   └── HelloController
+└── security
+    └── SecurityConfig
 ```
