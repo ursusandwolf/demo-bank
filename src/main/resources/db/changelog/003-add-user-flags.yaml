@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260609-3
+      author: alex
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: account_expired
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: credentials_expired
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

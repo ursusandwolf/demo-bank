@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260609-2
+      author: alex
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  value: 00000000-0000-0000-0000-000000000001
+              - column:
+                  name: email
+                  value: user@example.com
+              - column:
+                  name: password
+                  value: $2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.TVuHOn2
+              - column:
+                  name: first_name
+                  value: Test
+              - column:
+                  name: last_name
+                  value: User
+              - column:
+                  name: status
+                  value: ACTIVE
+              - column:
+                  name: created_at
+                  valueDate: now()
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  value: 00000000-0000-0000-0000-000000000001
+              - column:
+                  name: role
+                  value: USER

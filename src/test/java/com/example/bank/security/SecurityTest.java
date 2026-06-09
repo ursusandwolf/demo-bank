@@ -34,7 +34,7 @@ class SecurityTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(username = "user@example.com", roles = "USER")
     void privateEndpointShouldBeAccessibleWithAuth() throws Exception {
         mockMvc.perform(get("/api/private/hello"))
                 .andExpect(status().isOk())

@@ -1,13 +1,13 @@
 # Project Context: Demo Bank
 
 ## Current State
-- **Iteration 1** completed: Basic endpoint protection implemented.
-- Tech Stack: Java 21, Spring Boot 3.3.0, PostgreSQL, Liquibase, Maven, Docker Compose, Spring Security.
-- Implemented a public health endpoint and a protected hello endpoint.
-- Configured basic authentication with an in-memory user.
+- **Iteration 3** completed: Password hashing with BCrypt implemented.
+- Tech Stack: Java 21, Spring Boot 3.3.0, PostgreSQL, Liquibase, Maven, Docker Compose, Spring Security (BCrypt).
+- Implemented secure password storage.
+- Updated authentication tests to verify BCrypt matching.
 
 ## Pending Items
-- **Iteration 2**: User from Database (UserDetails, UserDetailsService).
+- **Iteration 4**: User Registration (Public endpoint, validation).
 - Database schema for Users and Roles.
 - Registration and Authentication logic.
 

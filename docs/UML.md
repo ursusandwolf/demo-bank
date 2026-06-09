@@ -12,6 +12,12 @@ com.example.bank
 │       └── HealthController
 ├── auth
 │   └── HelloController
-└── security
-    └── SecurityConfig
+├── security
+│   ├── SecurityConfig
+│   └── CustomUserDetailsService
+└── user
+    ├── User (Entity, UserDetails)
+    ├── Role (Enum)
+    ├── UserStatus (Enum)
+    └── UserRepository
 ```
