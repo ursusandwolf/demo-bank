@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/002-insert-test-user.yaml
   - include:
       file: db/changelog/003-add-user-flags.yaml
+  - include:
+      file: db/changelog/004-create-accounts.yaml
+  - include:
+      file: db/changelog/005-create-transactions.yaml

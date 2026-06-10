@@ -19,5 +19,22 @@ com.example.bank
     ├── User (Entity, UserDetails)
     ├── Role (Enum)
     ├── UserStatus (Enum)
-    └── UserRepository
+    ├── UserRepository
+    ├── UserService
+    ├── RegistrationController
+    ├── AdminUserController
+    └── dto
+        ├── RegisterRequest (record)
+        └── UserResponse (record)
+├── account
+│   ├── BankAccount (Entity)
+│   ├── AccountTransaction (Entity)
+│   ├── AccountStatus (Enum)
+│   ├── TransactionType (Enum)
+│   ├── BankAccountRepository
+│   ├── TransactionRepository
+│   ├── AccountController
+│   └── dto
+│       ├── AccountResponse
+│       └── TransactionResponse
 ```

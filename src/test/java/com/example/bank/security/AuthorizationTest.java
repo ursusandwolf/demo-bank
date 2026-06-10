@@ -75,6 +75,12 @@ class AuthorizationTest {
                 .andExpect(status().isUnauthorized()); // 401 Unauthorized
     }
 
+    @Test
+    void anonymousShouldNotAccessAdminEndpoint() throws Exception {
+        mockMvc.perform(get("/api/admin/users"))
+                .andExpect(status().isUnauthorized()); // 401 Unauthorized
+    }
+
     private void createUser(String email, String password, Role role) {
         User user = User.builder()
                 .id(UUID.randomUUID())
