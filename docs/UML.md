@@ -30,11 +30,15 @@ com.example.bank
 │   ├── BankAccount (Entity)
 │   ├── AccountTransaction (Entity)
 │   ├── AccountStatus (Enum)
-│   ├── TransactionType (Enum)
+│   ├── TransactionType (Enum: CREDIT, DEBIT, TRANSFER_IN, TRANSFER_OUT)
 │   ├── BankAccountRepository
 │   ├── TransactionRepository
 │   ├── AccountController
 │   └── dto
 │       ├── AccountResponse
-│       └── TransactionResponse
+│       ├── TransactionResponse
+│       └── TransferRequest
+├── transfer
+│   ├── TransferService
+│   └── TransferController
 ```

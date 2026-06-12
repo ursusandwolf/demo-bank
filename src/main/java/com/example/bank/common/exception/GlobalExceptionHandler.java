@@ -22,6 +22,11 @@ public class GlobalExceptionHandler {
         return createErrorResponse(ex, request, HttpStatus.CONFLICT, "USER_ALREADY_EXISTS");
     }
 
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ErrorResponse> handleBadRequest(RuntimeException ex, HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "BAD_REQUEST");
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String message = ex.getBindingResult().getFieldErrors().stream()

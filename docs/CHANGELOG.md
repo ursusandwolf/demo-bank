@@ -59,6 +59,17 @@
 - Secure account access: users can only see their own accounts (IDOR protection).
 - `AccountController` for managing bank accounts.
 
+## [0.9.0] - 2026-06-12
+### Added
+- Money transfers and business logic (Iteration 9).
+- `TransferService` with atomic operations and business validation.
+- `TransferController` with `POST /api/transfers`.
+- `TransferRequest` DTO.
+- Optimistic locking with `@Version` in `BankAccount`.
+- Expanded `TransactionType` with `TRANSFER_IN` and `TRANSFER_OUT`.
+- `GlobalExceptionHandler` update for bad request handling.
+- Integration tests for successful and failed transfers.
+
 ## [0.8.0] - 2026-06-10
 ### Added
 - Transaction history (Iteration 8).

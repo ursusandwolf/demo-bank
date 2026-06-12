@@ -18,4 +18,6 @@ public interface BankAccountRepository extends JpaRepository<BankAccount, UUID> 
     // Список всех счетов конкретного пользователя
     @Query("SELECT a FROM BankAccount a WHERE a.owner.email = :ownerEmail")
     List<BankAccount> findAllByOwnerEmail(String ownerEmail);
+
+    Optional<BankAccount> findByAccountNumber(String accountNumber);
 }
