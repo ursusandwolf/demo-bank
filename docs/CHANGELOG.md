@@ -70,6 +70,14 @@
 - `GlobalExceptionHandler` update for bad request handling.
 - Integration tests for successful and failed transfers.
 
+## [0.10.0] - 2026-06-14
+### Added
+- Custom security error handling (Iteration 10).
+- `CustomAuthenticationEntryPoint` for 401 Unauthorized JSON responses.
+- `CustomAccessDeniedHandler` for 403 Forbidden JSON responses.
+- Integrated handlers into `SecurityConfig`.
+- `SecurityErrorHandlingVerificationTest` for verifying JSON error structure.
+
 ## [0.8.0] - 2026-06-10
 ### Added
 - Transaction history (Iteration 8).

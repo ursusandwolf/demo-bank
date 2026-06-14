@@ -1,20 +1,18 @@
 # Project Context: Demo Bank
 
 ## Current State
-- **Iteration 9** completed: Money transfers with business validation and atomicity.
+- **Iteration 10** completed: Custom security error handling (EntryPoint and AccessDeniedHandler).
 - Tech Stack: Java 21, Spring Boot 3.3.0, PostgreSQL, Liquibase, Maven, Docker Compose, Spring Security (BCrypt).
 - Implemented core features: Registration, Roles, Current User, Bank Accounts, Transaction History, Transfers.
-- Security: Ownership-based authorization (IDOR protection) for accounts, transactions, and transfers.
+- Security: Ownership-based authorization (IDOR protection), custom JSON error responses for 401/403.
 - Concurrency: Optimistic locking with `@Version` for balance consistency.
 
 ## Pending Items
-- **Iteration 10**: Security error handling (custom EntryPoint and AccessDeniedHandler).
 - **Iteration 11**: Comprehensive Security Testing.
 - **Iteration 12**: JWT transition.
 
 ## Recent Changes
-- Implemented `TransferService` and `TransferController`.
-- Added business logic for transfers (balance check, currency check, active status).
-- Added `TRANSFER_IN` and `TRANSFER_OUT` types to operation history.
-- Improved `GlobalExceptionHandler` to handle business logic errors as 400 Bad Request.
-- Added `TransferTest` covering positive and negative scenarios.
+- Implemented `CustomAuthenticationEntryPoint` and `CustomAccessDeniedHandler`.
+- Configured `SecurityConfig` to return consistent JSON errors for authentication and authorization failures.
+- Added `SecurityErrorHandlingVerificationTest`.
+- Fixed `CHANGELOG.md` versioning and updated documentation.

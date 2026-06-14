@@ -1,5 +1,7 @@
 package com.example.bank.user;
 
+import com.example.bank.account.BankAccountRepository;
+import com.example.bank.account.TransactionRepository;
 import com.example.bank.user.dto.RegisterRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,10 +31,18 @@ class RegistrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private BankAccountRepository accountRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        transactionRepository.deleteAll();
+        accountRepository.deleteAll();
         userRepository.deleteAll();
     }
 

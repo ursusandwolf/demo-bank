@@ -41,10 +41,14 @@ class AccountAuthorizationTest {
     private BankAccountRepository accountRepository;
 
     @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        transactionRepository.deleteAll();
         accountRepository.deleteAll();
         userRepository.deleteAll();
 

@@ -43,8 +43,13 @@ The project follows a "Security in Depth" approach:
 - `GET /api/admin/users`: List all users.
 
 ## Error Handling
-The project uses a `GlobalExceptionHandler` to return consistent JSON error responses with trace IDs for debugging.
-- `401 Unauthorized`: Missing or invalid credentials.
-- `403 Forbidden`: Insufficient permissions (role mismatch).
-- `404 Not Found`: Resource doesn't exist or belongs to another user.
-- `400 Bad Request`: Business validation failure (e.g., insufficient funds).
+The project uses a `GlobalExceptionHandler` and custom security handlers to return consistent JSON error responses with trace IDs for debugging.
+
+### Security Errors
+- **401 Unauthorized**: Handled by `CustomAuthenticationEntryPoint`. Returns JSON when authentication is missing or invalid.
+- **403 Forbidden**: Handled by `CustomAccessDeniedHandler`. Returns JSON when the user has insufficient permissions (role mismatch or resource ownership violation).
+
+### Domain Errors
+- **404 Not Found**: Resource doesn't exist or belongs to another user.
+- **400 Bad Request**: Business validation failure (e.g., insufficient funds) or input validation errors.
+- **409 Conflict**: Resource already exists (e.g., email taken).

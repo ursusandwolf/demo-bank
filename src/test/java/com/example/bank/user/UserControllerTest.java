@@ -1,5 +1,7 @@
 package com.example.bank.user;
 
+import com.example.bank.account.BankAccountRepository;
+import com.example.bank.account.TransactionRepository;
 import com.example.bank.user.dto.UserResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -33,10 +36,18 @@ class UserControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private BankAccountRepository accountRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp() {
+        transactionRepository.deleteAll();
+        accountRepository.deleteAll();
         userRepository.deleteAll();
         User user = User.builder()
                 .id(UUID.randomUUID())
@@ -58,7 +69,7 @@ class UserControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithUserDetails(value = "test@example.com", setupBefore = org.springframework.security.test.context.support.TestExecutionEvent.TEST_EXECUTION)
+    @WithUserDetails(value = "test@example.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void shouldReturnUserProfileWhenAuthenticated() throws Exception {
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isOk())
@@ -68,7 +79,7 @@ class UserControllerTest {
     }
 
     @Test
-    @org.springframework.security.test.context.support.WithUserDetails(value = "test@example.com", setupBefore = org.springframework.security.test.context.support.TestExecutionEvent.TEST_EXECUTION)
+    @WithUserDetails(value = "test@example.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     void shouldReturnUserCountWhenAuthenticated() throws Exception {
         mockMvc.perform(get("/api/users/count"))
                 .andExpect(status().isOk())

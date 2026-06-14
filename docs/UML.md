@@ -14,7 +14,9 @@ com.example.bank
 │   └── HelloController
 ├── security
 │   ├── SecurityConfig
-│   └── CustomUserDetailsService
+│   ├── CustomUserDetailsService
+│   ├── CustomAuthenticationEntryPoint
+│   └── CustomAccessDeniedHandler
 └── user
     ├── User (Entity, UserDetails)
     ├── Role (Enum)
