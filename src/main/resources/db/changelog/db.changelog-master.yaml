@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/changelog/004-create-accounts.yaml
   - include:
       file: db/changelog/005-create-transactions.yaml
+  - include:
+      file: db/changelog/006-create-refresh-tokens.yaml

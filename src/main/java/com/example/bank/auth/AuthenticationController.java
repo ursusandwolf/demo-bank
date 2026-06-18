@@ -20,4 +20,9 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.login(request));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthenticationResponse> refresh(@RequestBody String refreshToken) {
+        return ResponseEntity.ok(authenticationService.refresh(refreshToken));
+    }
 }
