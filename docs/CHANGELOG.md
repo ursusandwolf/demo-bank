@@ -59,6 +59,13 @@
 - Secure account access: users can only see their own accounts (IDOR protection).
 - `AccountController` for managing bank accounts.
 
+## [0.8.0] - 2026-06-10
+### Added
+- Transaction history (Iteration 8).
+- `AccountTransaction` entity and `TransactionRepository`.
+- Paginated transaction history with ownership verification.
+- Integration tests for secure transaction access.
+
 ## [0.9.0] - 2026-06-12
 ### Added
 - Money transfers and business logic (Iteration 9).
@@ -78,10 +85,8 @@
 - Integrated handlers into `SecurityConfig`.
 - `SecurityErrorHandlingVerificationTest` for verifying JSON error structure.
 
-## [0.8.0] - 2026-06-10
+## [1.0.0] - 2026-06-18
 ### Added
-- Transaction history (Iteration 8).
-- `AccountTransaction` entity and `TransactionRepository`.
-- Paginated transaction history with ownership verification.
-- Integration tests for secure transaction access.
-
+- JWT Infrastructure and Authentication Filter (Iteration 12).
+- Refresh Token logic (Iteration 13).
+- Hardening (Security Headers, CORS) (Iteration 14).
