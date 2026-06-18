@@ -20,3 +20,6 @@ server:
   port: 8080
   error:
     include-message: always
+
+jwt:
+  secret: 404e635266546a576e5a7234753778214125442A472D4B6150645367566B5970
