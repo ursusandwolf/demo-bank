@@ -2,18 +2,12 @@ package com.example.bank.user;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -22,53 +16,40 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
-
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    @Column(name = "first_name")
     private String firstName;
-    
+
+    @Column(name = "last_name")
     private String lastName;
-
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private UserStatus status = UserStatus.ACTIVE;
-
-    @Builder.Default
-    private boolean accountExpired = false;
-
-    @Builder.Default
-    private boolean credentialsExpired = false;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "account_expired")
+    private boolean accountExpired;
 
-    @LastModifiedDate
-    private Instant updatedAt;
+    @Column(name = "credentials_expired")
+    private boolean credentialsExpired;
 
-    @Version
-    private Long version;
+    @Column(name = "account_locked")
+    private boolean accountLocked;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                .collect(Collectors.toSet());
+        return roles;
     }
 
     @Override
@@ -83,7 +64,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return status != UserStatus.BLOCKED;
+        return !accountLocked;
     }
 
     @Override
@@ -93,6 +74,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status == UserStatus.ACTIVE;
+        return true;
     }
 }
