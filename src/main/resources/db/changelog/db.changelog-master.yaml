@@ -14,3 +14,5 @@ databaseChangeLog:
       file: db/changelog/006-create-refresh-tokens.yaml
   - include:
       file: db/changelog/007-review-fixes.yaml
+  - include:
+      file: db/changelog/008-security-lifecycle.yaml

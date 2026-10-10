@@ -4,8 +4,8 @@
 
 | Package | Responsibility |
 | --- | --- |
-| `auth` | Registration alias, login, refresh and private example endpoint |
-| `security` | Security chain, user lookup, JWT validation and refresh-token lifecycle |
+| `auth` | Registration alias, login, refresh, logout and password-change endpoints |
+| `security` | Security chain, JWT validation, lifecycle revocation, login limiter and event audit |
 | `user` | User entity, registration service, profiles and administrative queries |
 | `account` | Account/history entities, owner-scoped repositories and DTOs |
 | `transfer` | Atomic balance changes and paired transaction records |
@@ -28,6 +28,7 @@ erDiagram
         boolean account_expired
         boolean credentials_expired
         bigint version
+        bigint auth_version
     }
     USER_ROLES {
         uuid user_id FK
@@ -55,6 +56,13 @@ erDiagram
         string token UK
         timestamp expiry_date
     }
+    SECURITY_AUDIT_EVENTS {
+        uuid id PK
+        string type
+        uuid actor_id
+        uuid target_id
+        timestamp occurred_at
+    }
 ```
 
 Passwords are BCrypt hashes. `refresh_tokens.token` holds a SHA-256 hash of a high-entropy opaque token. User and account versions support optimistic locking. Audit timestamps are populated by Spring Data JPA auditing. Liquibase owns schema changes; Hibernate validates rather than creates the schema.
@@ -79,4 +87,4 @@ sequenceDiagram
     T-->>C: 200 or 409
 ```
 
-Account history queries constrain both account number and owner email. Refresh rotation uses a pessimistic row lock and replaces the stored token hash inside a transaction. The tests run migrations on H2; verification against PostgreSQL remains separate work.
+Account history queries constrain both account number and owner email. Security operations acquire a user lock before changing refresh rows. JWTs compare `authVersion` to the user's `auth_version`; logout/password/status commands increment it and delete refresh tokens. Audit UUID references deliberately have no foreign keys so events survive user deletion and rejected operations can be recorded in an independent transaction. The tests run migrations on H2; verification against PostgreSQL remains separate work.

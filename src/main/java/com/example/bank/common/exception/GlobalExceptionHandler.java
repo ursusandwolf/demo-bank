@@ -17,6 +17,13 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleStatus(org.springframework.web.server.ResponseStatusException ex,
+                                                     HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.valueOf(ex.getStatusCode().value()),
+                "REQUEST_REJECTED", ex.getReason());
+    }
+
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataConflict(Exception ex, HttpServletRequest request) {
         return createErrorResponse(ex, request, HttpStatus.CONFLICT, "DATA_CONFLICT", "Request conflicts with existing data");
@@ -35,7 +42,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
     public ResponseEntity<ErrorResponse> handleConflict(Exception ex, HttpServletRequest request) {
         return createErrorResponse(ex, request, HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION",
-                "Account was updated concurrently; retry the operation");
+                "Resource was updated concurrently; retry the operation");
     }
 
     @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
@@ -65,7 +72,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, HttpServletRequest request) {
         UUID traceId = UUID.randomUUID();
-        log.error("Unhandled exception occurred [traceId: {}]: {}", traceId, ex.getMessage(), ex);
+        // Exception messages/causes can contain SQL parameters or credential-bearing input.
+        log.error("Unhandled exception [traceId: {}] [type: {}]", traceId, ex.getClass().getName());
 
         ErrorResponse error = new ErrorResponse(
             Instant.now(),

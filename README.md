@@ -7,7 +7,7 @@
 
 A banking REST API built to explore Spring Security, resource ownership and transactional money transfers. The project demonstrates how authentication, authorization and persistence work together in a Java backend.
 
-**Maintenance update — October 2026:** consolidated development into `dev`, repaired authentication and persistence, added regression coverage and automated verification. See the [review report](docs/CODE_REVIEW.md) and [changelog](docs/CHANGELOG.md).
+**October 2026:** iteration 14 is complete, including password changes, logout, administrative blocking, security auditing and login throttling. Development is integrated in `dev`, with reviewed snapshots in `main`. See the [iteration acceptance report](docs/ITERATION_14.md), [review report](docs/CODE_REVIEW.md) and [changelog](docs/CHANGELOG.md).
 
 > A portfolio and learning project. It is not intended to handle real money or personal banking data.
 
@@ -17,6 +17,8 @@ A banking REST API built to explore Spring Security, resource ownership and tran
 - Authenticates with signed JWT access tokens that expire after 15 minutes.
 - Rotates refresh tokens, rejecting reuse of the previous token; refresh tokens expire after seven days.
 - Checks blocked, locked and expired user accounts for login, JWT requests and refresh.
+- Revokes every session immediately on logout, password change or administrative status change.
+- Limits login requests per peer IP and persists security events for administrator review.
 - Restricts administrative endpoints to `ADMIN` and account queries to their owner.
 - Transfers money atomically, updating both balances and recording both sides of the transfer.
 - Rejects invalid amounts, insufficient funds, inactive accounts and currency mismatches.
@@ -73,6 +75,9 @@ The Compose database listens on `127.0.0.1:5432` and persists data in a named vo
 | `DATABASE_USERNAME` | `postgres` | Local database username |
 | `DATABASE_PASSWORD` | `postgres` | Local database password |
 | `LIQUIBASE_CONTEXTS` | `default` | Set to `demo` only when you want the historical demo-user seed |
+| `LOGIN_MAX_ATTEMPTS` | `10` | Maximum login requests per peer IP in a fixed window, including successful requests |
+| `LOGIN_WINDOW_SECONDS` | `60` | Login rate-limit window |
+| `LOGIN_MAX_CLIENTS` | `10000` | Maximum active IP buckets per application instance |
 
 Local database credentials are for development. New databases contain no demo users under the default context. Register your own user. Tests supply a separate public test key and need no environment variables or database server.
 
@@ -116,10 +121,14 @@ Registration creates a user, not a funded account. To exercise transfers locally
 | POST | `/api/public/register` | Public registration alias |
 | POST | `/api/auth/login` | Public |
 | POST | `/api/auth/refresh` | Valid refresh token |
+| POST | `/api/auth/logout` | Authenticated; revokes all sessions, returns 204 |
+| POST | `/api/auth/change-password` | Authenticated; current password required, returns 204 |
 | GET | `/api/private/hello` | `USER` or `ADMIN` |
 | GET | `/api/users/me` | Authenticated |
 | GET | `/api/users/count` | `USER` or `ADMIN` |
 | GET | `/api/admin/users` | `ADMIN` |
+| PUT | `/api/admin/users/{id}/status` | `ADMIN`; `ACTIVE` or `BLOCKED`, returns 204 |
+| GET | `/api/admin/security-events` | `ADMIN`; paginated security audit |
 | GET | `/api/accounts` | Authenticated; own accounts |
 | GET | `/api/accounts/{number}` | Owner; otherwise 404 |
 | GET | `/api/accounts/{number}/transactions` | Own history; otherwise empty page |
@@ -135,7 +144,7 @@ mvn --batch-mode --no-transfer-progress verify
 
 The suite checks registration, authentication, role restrictions, account ownership, transaction history, transfers and token lifecycle. H2 runs the Liquibase migrations with Hibernate schema validation enabled. CI runs the same verification on pushes and pull requests to `main` and `dev`.
 
-H2 is not a substitute for PostgreSQL integration testing. PostgreSQL concurrency and deployment checks remain on the [roadmap](docs/PROJECT_CONTEXT.md#next-steps).
+CI also runs `mvn --batch-mode --no-transfer-progress -Ppostgres-integration verify` with a disposable PostgreSQL 16 service. The profile adds committed lifecycle tests, simultaneous refresh/logout/password-change scenarios, transfer rollback and stale-balance checks. See [integration setup](docs/ITERATION_14.md#verification) for running it locally. Broader load testing and deployment checks remain on the [roadmap](docs/PROJECT_CONTEXT.md#next-steps).
 
 ## How it fits together
 
@@ -160,6 +169,7 @@ Code is organized by feature under `com.example.bank`: `auth`, `security`, `user
 - [API documentation](docs/DOCUMENTATION.md)
 - [Review findings and fixes](docs/CODE_REVIEW.md)
 - [Project status and next steps](docs/PROJECT_CONTEXT.md)
+- [Iteration 14 acceptance and security decisions](docs/ITERATION_14.md)
 - [Changelog](docs/CHANGELOG.md)
 
 Current scope does not include a frontend, account provisioning, deposits, multi-currency conversion, payment integrations or production deployment. CORS allows `http://localhost:3000`; adapt it when adding a client application.

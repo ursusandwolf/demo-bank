@@ -30,6 +30,7 @@ public class JwtService {
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .claims(extraClaims)
+                .claim("authVersion", userDetails instanceof com.example.bank.user.User user ? user.getAuthVersion() : 0L)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 минут
@@ -48,7 +49,11 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        var claims = Jwts.parser().verifyWith(getSignInKey()).build().parseSignedClaims(token).getPayload();
+        Long version = claims.get("authVersion", Long.class);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token)
+                && version != null && userDetails instanceof com.example.bank.user.User user
+                && version == user.getAuthVersion();
     }
 
     private boolean isTokenExpired(String token) {

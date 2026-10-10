@@ -1,5 +1,17 @@
 # Changelog
 
+## Iteration 14 completion — 2026-10-10
+
+- Added authenticated password changes and global logout with immediate access/refresh revocation.
+- Added ADMIN user block/activation and paginated security audit endpoints.
+- Persisted security events without passwords, tokens, request bodies or raw email addresses.
+- Added bounded login throttling with 429/Retry-After, verified CORS/headers and disabled browser logout.
+- Added auth-version/audit schema migration; existing users must log in again after upgrading.
+- Extended verification to 58 regular tests and 11 PostgreSQL integration scenarios in CI.
+- Reconciled the README, API contract, project status and iteration acceptance documentation.
+
+Historical iteration completion notes below describe earlier snapshots; the current delivered security contract is recorded in [ITERATION_14.md](ITERATION_14.md).
+
 ## Maintenance — 2026-10-10
 
 ### Fixed

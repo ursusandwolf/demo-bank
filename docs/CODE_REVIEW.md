@@ -43,8 +43,21 @@ Dependency versions were updated within Spring Boot 3 to reduce migration scope.
 - The new migration deletes existing refresh credentials before introducing hashed storage. Users need to log in again.
 - Existing Liquibase changesets remain intact; schema fixes use `007-review-fixes.yaml`.
 - Default databases no longer seed the historical demo user. Existing users are retained.
-- Multiple login sessions have independent refresh tokens; family revocation and logout are not implemented.
+- Multiple login sessions have independent refresh tokens. This initial maintenance pass did not implement logout; iteration 14 below adds global session revocation.
 
 ## Remaining scope
 
-Production hardening requires PostgreSQL concurrency verification, transfer idempotency, refresh-family revocation, rate limiting, security audit logging and deployment work. These are tracked in [next steps](PROJECT_CONTEXT.md#next-steps). The project is presented as a portfolio backend with its limitations stated explicitly.
+The initial review identified PostgreSQL concurrency verification, transfer idempotency, refresh-family revocation, rate limiting, security auditing and deployment work as follow-up scope. The current [roadmap](PROJECT_CONTEXT.md#next-steps) distinguishes delivered features from remaining work.
+
+## Iteration 14 follow-up
+
+- Added global logout and password change, with immediate JWT revocation using a database auth version and refresh-token deletion.
+- Added an ADMIN status command; unblocking cannot revive credentials from an earlier version.
+- Serialized login/refresh/lifecycle operations using user-before-refresh row locking. Added PostgreSQL tests for concurrent consumption and revocation races.
+- Added persistent credential-free audit metadata. Successful events commit with the operation; failures survive rollback. Audit retrieval is ADMIN-only and paginated.
+- Added bounded per-peer login limits, 429/Retry-After and tests for expiry, storage saturation and concurrent requests.
+- Removed automatic servlet registration of security filters so they run only in the configured security chain.
+- Disabled the default browser logout endpoint and credentialed CORS; verified cookie rejection and security headers.
+- Removed raw exception messages/stacks from generic error logging because they can contain sensitive SQL parameters.
+
+The follow-up suite has 58 H2 tests and 11 PostgreSQL integration tests in the optional profile used by CI. See [iteration acceptance](ITERATION_14.md) for upgrade impact and operational limits. Logout revokes every session, and the local rate limiter is intended for a single process. Individual device logout, distributed limits and audit retention are outside the delivered scope.

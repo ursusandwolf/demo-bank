@@ -23,9 +23,11 @@ public class RefreshTokenService {
 
     @Transactional
     public IssuedToken createRefreshToken(String email) {
+        User user = userRepository.findForSecurityUpdate(email).orElseThrow();
+        new AccountStatusUserDetailsChecker().check(user);
         String rawToken = UUID.randomUUID().toString() + UUID.randomUUID();
         RefreshToken refreshToken = RefreshToken.builder()
-                .user(userRepository.findByEmail(email).orElseThrow())
+                .user(user)
                 .token(hashToken(rawToken))
                 .expiryDate(Instant.now().plus(REFRESH_TOKEN_DURATION_DAYS, ChronoUnit.DAYS))
                 .build();
@@ -50,15 +52,20 @@ public class RefreshTokenService {
         if (token == null || token.isBlank()) {
             throw new BadCredentialsException("Invalid refresh token");
         }
-        RefreshToken refreshToken = refreshTokenRepository.findForRotation(hashToken(token))
+        String hash = hashToken(token);
+        RefreshToken candidate = refreshTokenRepository.findByToken(hash)
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+        User user = userRepository.findForSecurityUpdate(candidate.getUser().getEmail())
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+        RefreshToken refreshToken = refreshTokenRepository.findForRotation(hash)
                 .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
         verifyExpiration(refreshToken);
-        new AccountStatusUserDetailsChecker().check(refreshToken.getUser());
+        new AccountStatusUserDetailsChecker().check(user);
         String replacement = UUID.randomUUID().toString() + UUID.randomUUID();
         refreshToken.setToken(hashToken(replacement));
         refreshToken.setExpiryDate(Instant.now().plus(REFRESH_TOKEN_DURATION_DAYS, ChronoUnit.DAYS));
         refreshTokenRepository.save(refreshToken);
-        return new IssuedToken(refreshToken.getUser(), replacement);
+        return new IssuedToken(user, replacement);
     }
 
     static String hashToken(String token) {

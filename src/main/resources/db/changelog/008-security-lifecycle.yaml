@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20261010-8
+      author: alex
+      changes:
+        # JWTs without authVersion become invalid; remove their refresh credentials too.
+        - delete:
+            tableName: refresh_tokens
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: auth_version
+                  type: BIGINT
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: security_audit_events
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(40)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: actor_id
+                  type: UUID
+              - column:
+                  name: target_id
+                  type: UUID
+              - column:
+                  name: occurred_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: security_audit_events
+            indexName: idx_security_audit_occurred
+            columns:
+              - column:
+                  name: occurred_at

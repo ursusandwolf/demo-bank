@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${TEST_DATABASE_URL:jdbc:postgresql://localhost:5432/bank_test}
+    driver-class-name: org.postgresql.Driver
+    username: ${TEST_DATABASE_USERNAME:postgres}
+    password: ${TEST_DATABASE_PASSWORD:postgres}
+    hikari:
+      connection-init-sql: SET lock_timeout TO '5s'
+  liquibase:
+    contexts: default
+
+jwt:
+  secret: c3VwZXItbG9uZy10ZXN0LW9ubHktc2VjcmV0LWtleS1mb3ItSFMzODQtc2lnbmluZw==
+
+security:
+  login:
+    max-attempts: 1000

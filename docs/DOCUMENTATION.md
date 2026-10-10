@@ -22,6 +22,32 @@ Invalid credentials and blocked, locked or expired users receive 401. Access tok
 
 `POST /api/auth/refresh` accepts the refresh token directly as a `text/plain` body. A successful refresh returns the same response shape with a replacement refresh token. The old refresh token cannot be reused. Tokens are stored as SHA-256 hashes, and rotation locks the matching database row. Multiple logins create independent refresh tokens. Expired tokens are rejected; a scheduled cleanup job is not implemented.
 
+## Password changes, logout and blocking
+
+`POST /api/auth/change-password` requires a bearer token and JSON:
+
+```json
+{"currentPassword":"password123","newPassword":"aDifferentPassword123"}
+```
+
+Success returns 204. The new password must differ from the current password, contain at least eight characters and fit 72 UTF-8 bytes. Invalid input returns 400; an incorrect current password returns 401. Rejected requests leave the password and sessions unchanged.
+
+`POST /api/auth/logout` requires a bearer token, accepts no body and returns 204. **Logout is global for that user:** all access and refresh tokens from all login sessions are revoked. The token used for logout receives 401 on subsequent requests. Log in again to obtain new credentials. Password changes also revoke all sessions.
+
+`PUT /api/admin/users/{id}/status` accepts `{"status":"BLOCKED"}` or `{"status":"ACTIVE"}` and requires `ADMIN`. Success returns 204, an unknown ID returns 404 and an invalid status returns 400. Each status command revokes all sessions, including activation. Unblocking never restores old tokens. An administrator may block their own account; another administrator must restore it.
+
+JWTs carry an `authVersion` claim checked against the current database user on every bearer request. Lifecycle commands increment this version and delete refresh credentials in the same transaction. Requests already authorized before a revocation may finish; the next authentication check rejects the old token. Login/refresh issuance and lifecycle changes lock the user before refresh rows. PostgreSQL concurrency verification remains on the roadmap.
+
+## Login limits and security audit
+
+Login accepts up to `LOGIN_MAX_ATTEMPTS` requests per socket peer IP in a fixed `LOGIN_WINDOW_SECONDS` window (defaults: 10 and 60). All login requests count, including successful and malformed requests. Further attempts receive 429 with `LOGIN_RATE_LIMITED`, a trace ID and `Retry-After` seconds. A successful login does not reset the counter. The filter runs before credential verification. `X-Forwarded-For` is ignored; behind a reverse proxy the peer may be the proxy, and clients sharing that peer share the budget.
+
+The limiter is per process and resets on restart. Storage is bounded by `LOGIN_MAX_CLIENTS` (default 10000); new peers are rejected when all buckets are active. Expired buckets can be reused. Multiple application replicas need a shared gateway or distributed limiter before deployment.
+
+`GET /api/admin/security-events?page=0&size=20` returns a page of `id`, `type`, `actorId`, `targetId` and `occurredAt`, newest first. Page must be non-negative; size is 1–100. Events cover successful/failed login and refresh, logout, password changes and failures, blocking/activation, and the first throttled login per known peer window. Capacity rejections are not individually audited. Failed login/refresh attempts have no actor ID; successful operations refer to user UUIDs. Failed attempts survive transaction rollback; successful lifecycle events commit with their changes.
+
+The audit stores no email, password, token, IP address or request body. Exception logging records class and trace ID rather than potentially credential-bearing messages or stack traces. Audit access is read-only through the API; database administrators must define retention and access policies for a deployment. Token-family replay tracking and automatic audit/refresh cleanup remain future work.
+
 ## Profiles and roles
 
 | Endpoint | Behavior |
@@ -31,6 +57,8 @@ Invalid credentials and blocked, locked or expired users receive 401. Access tok
 | `GET /api/users/me` | Current user's ID, email and names; never password or token fields |
 | `GET /api/users/count` | User count for `USER` or `ADMIN` |
 | `GET /api/admin/users` | User DTOs for `ADMIN` only |
+| `PUT /api/admin/users/{id}/status` | Administrative block/activation with session revocation |
+| `GET /api/admin/security-events` | Paginated security events for `ADMIN` only |
 
 Role authorities are `USER` and `ADMIN`, without a `ROLE_` prefix. JWT requests reload the user from the database, so account status changes take effect on subsequent requests. An admin has no exemption from account ownership checks.
 
@@ -96,8 +124,13 @@ Security and application errors contain `timestamp`, `status`, `code`, `message`
 | 400 | Invalid JSON, validation failure or invalid transfer |
 | 401 | Missing/invalid/expired authentication, invalid refresh token or disallowed user status |
 | 403 | Insufficient role authority |
-| 404 | Account details unavailable to the caller; this response has no error body |
+| 404 | Account details unavailable (empty body), or administrative user ID absent (JSON error) |
 | 409 | Duplicate registration, data constraint conflict or optimistic locking conflict |
-| 500 | Unexpected server failure; internal exception details stay in server logs |
+| 429 | Login budget exhausted; retry after the seconds in `Retry-After` |
+| 500 | Unexpected server failure; logs record exception class and trace ID |
 
-Validation codes include `VALIDATION_ERROR`; registration uses `USER_ALREADY_EXISTS`; optimistic conflicts use `CONCURRENT_MODIFICATION`. Trace IDs correlate application errors with logs. The health endpoint is public, CORS permits `http://localhost:3000`, and sessions are stateless. CSRF is disabled because credentials are explicit bearer headers rather than browser session cookies.
+Validation codes include `VALIDATION_ERROR`; registration uses `USER_ALREADY_EXISTS`; optimistic conflicts use `CONCURRENT_MODIFICATION`. Trace IDs correlate application errors with logs; security audit events have separate IDs. The health endpoint is public. CORS permits `http://localhost:3000`, exposes `Retry-After` and does not allow credentialed cookie requests. Sessions are stateless and the API creates no session cookie.
+
+CSRF is disabled because this API authenticates only explicit bearer headers, not ambient browser credentials. A session application or JWT stored in an authentication cookie needs CSRF protection: a browser attaches those cookies automatically to requests, including requests initiated by other sites. CORS alone does not replace CSRF protection. Cookie-based authentication is not supported here.
+
+Spring Security supplies `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, cache-prevention headers and HSTS on HTTPS responses. Serve deployments over HTTPS. `JWT_SECRET` is required from the environment; keep signing keys and database passwords outside the repository and use a deployment secret store. Request-body and authorization-header logging must remain disabled.

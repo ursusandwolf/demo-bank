@@ -69,6 +69,9 @@ public class User implements UserDetails {
     @Column(name = "account_locked")
     private boolean accountLocked;
 
+    @Column(name = "auth_version", nullable = false)
+    private long authVersion;
+
     public void setRoles(Set<Role> roles) {
         this.roles = new java.util.HashSet<>(roles);
     }

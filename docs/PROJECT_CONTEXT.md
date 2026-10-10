@@ -14,16 +14,22 @@ Demo Bank is a portfolio backend focused on Spring Security and transactional pe
 - Added GitHub Actions verification and weekly Dependabot updates.
 - Replaced outdated documentation with runnable examples and an explicit branch workflow.
 
+## Iteration status
+
+The original learning plan uses iterations 0–14 rather than formal sprint dates. The foundational user, account, transfer and JWT features from iterations 0–13 are implemented. Iteration 14 is now complete for the documented educational API: administrator blocking, password change, global logout, persistent security audit, login throttling, sensitive-route authorization, CORS/CSRF decisions, security headers and external signing secrets. See [acceptance and limits](ITERATION_14.md).
+
+The backend is at the end of the planned educational security iteration, with regression coverage and automated delivery checks. Production readiness is a separate milestone.
+
 ## Next steps
 
 These are planned improvements, not implemented capabilities:
 
-- PostgreSQL integration tests for migrations, concurrent transfers and simultaneous refresh requests.
+- Broader PostgreSQL concurrent-transfer load tests; CI now includes migration validation, transfer rollback/stale updates and simultaneous refresh/lifecycle requests.
 - Transfer idempotency keys and stronger ledger reconciliation.
-- Refresh-token family revocation, logout and expiry cleanup.
-- Login rate limiting, security event auditing and deployment secret management.
+- Refresh-token family replay tracking and expiry cleanup; global logout and revocation are implemented.
+- Distributed login limits, audit retention and deployment secret management; a bounded local limiter and database audit are implemented.
 - Paginated administrative user listing and an explicit account provisioning workflow.
 - OpenAPI documentation and a client application.
 - Migration to a supported Spring Boot 4 release, with compatibility testing.
 
-The application has no production deployment or external payment integration. H2-based tests do not establish PostgreSQL concurrency behavior. Dependency updates are tested by CI; no comprehensive security audit is claimed.
+The application has no production deployment or external payment integration. CI checks both H2 and selected PostgreSQL persistence/concurrency scenarios; this is not a load test or comprehensive security audit. Dependency updates are tested by CI.
