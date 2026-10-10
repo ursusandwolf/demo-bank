@@ -14,7 +14,9 @@ import java.time.Instant;
 import java.util.Map;
 
 @Component
+@lombok.RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+    private final ObjectMapper mapper;
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
@@ -27,11 +29,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 "timestamp", Instant.now().toString(),
                 "status", HttpServletResponse.SC_FORBIDDEN,
                 "code", "FORBIDDEN",
-                "message", "You do not have permission to access this resource",
+                "message", "Access is denied",
+                "traceId", java.util.UUID.randomUUID().toString(),
                 "path", request.getRequestURI()
         );
 
-        final ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), body);
     }
 }

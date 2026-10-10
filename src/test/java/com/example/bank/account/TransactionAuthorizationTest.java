@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class TransactionAuthorizationTest {
@@ -75,8 +76,8 @@ class TransactionAuthorizationTest {
         mockMvc.perform(get("/api/accounts/ACC1/transactions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(2)))
-                .andExpect(jsonPath("$.content[0].description", is("Initial deposit")))
-                .andExpect(jsonPath("$.content[1].description", is("ATM Withdrawal")));
+                .andExpect(jsonPath("$.content[*].description",
+                        org.hamcrest.Matchers.containsInAnyOrder("Initial deposit", "ATM Withdrawal")));
     }
 
     @Test

@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SecurityTest {
@@ -34,7 +35,7 @@ class SecurityTest {
     }
 
     @Test
-    @WithMockUser(username = "user@example.com", roles = "USER")
+    @WithMockUser(username = "user@example.com", authorities = "USER")
     void privateEndpointShouldBeAccessibleWithAuth() throws Exception {
         mockMvc.perform(get("/api/private/hello"))
                 .andExpect(status().isOk())

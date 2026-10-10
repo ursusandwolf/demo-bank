@@ -18,6 +18,11 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
 
+    @jakarta.annotation.PostConstruct
+    void validateSigningKey() {
+        getSignInKey();
+    }
+
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }

@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class SecurityErrorHandlingVerificationTest {
@@ -33,7 +34,7 @@ class SecurityErrorHandlingVerificationTest {
     }
 
     @Test
-    @WithMockUser(username = "user@example.com", roles = "USER")
+    @WithMockUser(username = "user@example.com", authorities = "USER")
     void shouldReturnJsonErrorForForbiddenAccess() throws Exception {
         mockMvc.perform(get("/api/admin/users"))
                 .andExpect(status().isForbidden())

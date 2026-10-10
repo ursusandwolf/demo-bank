@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class AuthenticationTest {
@@ -44,7 +45,7 @@ class AuthenticationTest {
     void shouldAuthenticateSuccessfully() throws Exception {
         createUser("active@example.com", "password", UserStatus.ACTIVE, false, false);
 
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("active@example.com", "password")))
+        mockMvc.perform(login("active@example.com", "password"))
                 .andExpect(status().isOk());
     }
 
@@ -52,7 +53,7 @@ class AuthenticationTest {
     void shouldFailWhenUserIsBlocked() throws Exception {
         createUser("blocked@example.com", "password", UserStatus.BLOCKED, false, false);
 
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("blocked@example.com", "password")))
+        mockMvc.perform(login("blocked@example.com", "password"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -60,7 +61,7 @@ class AuthenticationTest {
     void shouldFailWhenAccountIsExpired() throws Exception {
         createUser("expired@example.com", "password", UserStatus.ACTIVE, true, false);
 
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("expired@example.com", "password")))
+        mockMvc.perform(login("expired@example.com", "password"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -68,7 +69,7 @@ class AuthenticationTest {
     void shouldFailWhenCredentialsAreExpired() throws Exception {
         createUser("pass-expired@example.com", "password", UserStatus.ACTIVE, false, true);
 
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("pass-expired@example.com", "password")))
+        mockMvc.perform(login("pass-expired@example.com", "password"))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -76,10 +77,16 @@ class AuthenticationTest {
     void shouldFailWithWrongPassword() throws Exception {
         createUser("user@example.com", "password", UserStatus.ACTIVE, false, false);
 
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("user@example.com", "wrong")))
+        mockMvc.perform(login("user@example.com", "wrong"))
                 .andExpect(status().isUnauthorized());
     }
 
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder login(String email, String password) throws Exception {
+        return org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/auth/login")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(
+                        java.util.Map.of("email", email, "password", password)));
+    }
     private void createUser(String email, String password, UserStatus status, boolean accExpired, boolean credExpired) {
         User user = User.builder()
                 .id(UUID.randomUUID())

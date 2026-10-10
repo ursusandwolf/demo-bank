@@ -30,10 +30,10 @@ public class AccountTransaction {
     @Column(nullable = false)
     private TransactionType type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal balanceAfter;
 
     private String description;

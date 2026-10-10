@@ -17,6 +17,32 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataConflict(Exception ex, HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.CONFLICT, "DATA_CONFLICT", "Request conflicts with existing data");
+    }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(Exception ex, HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Invalid credentials or token");
+    }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex, HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.FORBIDDEN, "FORBIDDEN", "Access is denied");
+    }
+
+    @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(Exception ex, HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.CONFLICT, "CONCURRENT_MODIFICATION",
+                "Account was updated concurrently; retry the operation");
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMalformedRequest(Exception ex, HttpServletRequest request) {
+        return createErrorResponse(ex, request, HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Malformed request body");
+    }
+
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException ex, HttpServletRequest request) {
         return createErrorResponse(ex, request, HttpStatus.CONFLICT, "USER_ALREADY_EXISTS");
@@ -45,7 +71,7 @@ public class GlobalExceptionHandler {
             Instant.now(),
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "INTERNAL_SERVER_ERROR",
-            ex.getMessage(),
+            "An unexpected error occurred",
             request.getRequestURI(),
             traceId
         );

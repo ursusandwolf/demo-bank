@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.Instant;
 
 import java.util.Collection;
 import java.util.Set;
@@ -16,10 +21,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -36,7 +42,23 @@ public class User implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
     private Set<Role> roles;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @LastModifiedDate
+    private Instant updatedAt;
+
+    @Version
+    private Long version;
 
     @Column(name = "account_expired")
     private boolean accountExpired;
@@ -47,9 +69,20 @@ public class User implements UserDetails {
     @Column(name = "account_locked")
     private boolean accountLocked;
 
+    public void setRoles(Set<Role> roles) {
+        this.roles = new java.util.HashSet<>(roles);
+    }
+
+    public static class UserBuilder {
+        public UserBuilder roles(Set<Role> roles) {
+            this.roles = new java.util.HashSet<>(roles);
+            return this;
+        }
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+        return roles.stream().map(role -> new SimpleGrantedAuthority(role.name())).toList();
     }
 
     @Override
@@ -74,6 +107,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return status == UserStatus.ACTIVE;
     }
 }

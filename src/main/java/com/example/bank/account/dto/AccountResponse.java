@@ -21,11 +21,11 @@ public class AccountResponse {
 
     public static AccountResponse fromEntity(BankAccount account) {
         User owner = account.getOwner();
-        String ownerFullName1 = owner.getFirstName() + " " + owner.getLastName();
+        String ownerFullName = owner.getFirstName() + " " + owner.getLastName();
         return AccountResponse.builder()
                 .id(account.getId())
                 .accountNumber(account.getAccountNumber())
-                .ownerFullName(ownerFullName1)
+                .ownerFullName(ownerFullName)
                 .balance(account.getBalance())
                 .currency(account.getCurrency())
                 .status(account.getStatus())

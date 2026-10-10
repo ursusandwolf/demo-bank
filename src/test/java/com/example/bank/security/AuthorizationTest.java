@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class AuthorizationTest {
@@ -35,6 +36,9 @@ class AuthorizationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtService jwtService;
+
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
@@ -47,25 +51,25 @@ class AuthorizationTest {
 
     @Test
     void userShouldAccessPrivateEndpoint() throws Exception {
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("user@example.com", "password")))
+        mockMvc.perform(get("/api/private/hello").header("Authorization", bearer("user@example.com")))
                 .andExpect(status().isOk());
     }
 
     @Test
     void userShouldNotAccessAdminEndpoint() throws Exception {
-        mockMvc.perform(get("/api/admin/users").with(httpBasic("user@example.com", "password")))
+        mockMvc.perform(get("/api/admin/users").header("Authorization", bearer("user@example.com")))
                 .andExpect(status().isForbidden()); // 403 Forbidden
     }
 
     @Test
     void adminShouldAccessAdminEndpoint() throws Exception {
-        mockMvc.perform(get("/api/admin/users").with(httpBasic("admin@example.com", "password")))
+        mockMvc.perform(get("/api/admin/users").header("Authorization", bearer("admin@example.com")))
                 .andExpect(status().isOk());
     }
 
     @Test
     void adminShouldAccessPrivateEndpoint() throws Exception {
-        mockMvc.perform(get("/api/private/hello").with(httpBasic("admin@example.com", "password")))
+        mockMvc.perform(get("/api/private/hello").header("Authorization", bearer("admin@example.com")))
                 .andExpect(status().isOk());
     }
 
@@ -79,6 +83,10 @@ class AuthorizationTest {
     void anonymousShouldNotAccessAdminEndpoint() throws Exception {
         mockMvc.perform(get("/api/admin/users"))
                 .andExpect(status().isUnauthorized()); // 401 Unauthorized
+    }
+
+    private String bearer(String email) {
+        return "Bearer " + jwtService.generateToken(userRepository.findByEmail(email).orElseThrow());
     }
 
     private void createUser(String email, String password, Role role) {

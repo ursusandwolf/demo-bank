@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class RegistrationTest {
@@ -101,6 +102,14 @@ class RegistrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectPasswordsOverBcryptByteLimit() throws Exception {
+        RegisterRequest request = RegisterRequest.builder().email("unicode@example.com")
+                .password("я".repeat(40)).firstName("John").lastName("Doe").build();
+        mockMvc.perform(post("/api/public/register").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest());
     }
 
     @Test

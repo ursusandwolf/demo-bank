@@ -19,6 +19,11 @@ public class TransferService {
 
     @Transactional
     public void transfer(TransferRequest request, User currentUser) {
+        if (request.amount() == null || request.amount().signum() <= 0
+                || request.amount().stripTrailingZeros().scale() > 2
+                || request.amount().compareTo(new BigDecimal("99999999999999999.99")) > 0) {
+            throw new IllegalArgumentException("Amount must be positive and fit DECIMAL(19,2)");
+        }
         // 1. Безопасность: Проверяем, что исходный счет принадлежит текущему пользователю
         // Мы используем findByAccountNumberAndOwnerEmail, чтобы злоумышленник не мог списать деньги с чужого счета
         BankAccount sourceAccount = accountRepository.findByAccountNumberAndOwnerEmail(
@@ -62,6 +67,9 @@ public class TransferService {
         }
         if (source.getBalance().compareTo(amount) < 0) {
             throw new IllegalStateException("Insufficient funds");
+        }
+        if (target.getBalance().add(amount).compareTo(new BigDecimal("99999999999999999.99")) > 0) {
+            throw new IllegalStateException("Target balance limit exceeded");
         }
     }
 

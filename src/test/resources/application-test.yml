@@ -6,8 +6,11 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+
+jwt:
+  secret: c3VwZXItbG9uZy10ZXN0LW9ubHktc2VjcmV0LWtleS1mb3ItSFMzODQtc2lnbmluZw==

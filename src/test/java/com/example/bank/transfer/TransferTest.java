@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class TransferTest {
@@ -82,6 +83,11 @@ class TransferTest {
 
         assertThat(source.getBalance()).isEqualByComparingTo("800.00");
         assertThat(target.getBalance()).isEqualByComparingTo("700.00");
+        transactionRepository.flush();
+        assertThat(transactionRepository.findAll()).hasSize(2)
+                .extracting(com.example.bank.account.AccountTransaction::getType)
+                .containsExactlyInAnyOrder(com.example.bank.account.TransactionType.TRANSFER_OUT,
+                        com.example.bank.account.TransactionType.TRANSFER_IN);
     }
 
     @Test
@@ -105,6 +111,29 @@ class TransferTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest()); // IllegalStateException
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"0", "-1.00", "0.001", "10.001", "100000000000000000.00"})
+    @WithUserDetails(value = "user1@example.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    void invalidAmountLeavesBalancesAndHistoryUnchanged(String amount) throws Exception {
+        TransferRequest request = new TransferRequest("ACC1", "ACC2", new BigDecimal(amount), "Invalid");
+        mockMvc.perform(post("/api/transfers").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))).andExpect(status().isBadRequest());
+        assertThat(accountRepository.findByAccountNumber("ACC1").orElseThrow().getBalance())
+                .isEqualByComparingTo("1000.00");
+        assertThat(accountRepository.findByAccountNumber("ACC2").orElseThrow().getBalance())
+                .isEqualByComparingTo("500.00");
+        assertThat(transactionRepository.count()).isZero();
+    }
+
+    @Test
+    @WithUserDetails(value = "user1@example.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    void selfTransferIsRejected() throws Exception {
+        mockMvc.perform(post("/api/transfers").contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new TransferRequest("ACC1", "ACC1", new BigDecimal("1.00"), "Self"))))
+                .andExpect(status().isBadRequest());
+        assertThat(transactionRepository.count()).isZero();
     }
 
     private User createUser(String email) {

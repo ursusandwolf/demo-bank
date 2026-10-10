@@ -3,6 +3,7 @@ databaseChangeLog:
       file: db/changelog/001-create-users.yaml
   - include:
       file: db/changelog/002-insert-test-user.yaml
+      contextFilter: demo
   - include:
       file: db/changelog/003-add-user-flags.yaml
   - include:
@@ -11,3 +12,5 @@ databaseChangeLog:
       file: db/changelog/005-create-transactions.yaml
   - include:
       file: db/changelog/006-create-refresh-tokens.yaml
+  - include:
+      file: db/changelog/007-review-fixes.yaml

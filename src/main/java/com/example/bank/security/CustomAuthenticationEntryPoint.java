@@ -14,7 +14,9 @@ import java.time.Instant;
 import java.util.Map;
 
 @Component
+@lombok.RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    private final ObjectMapper mapper;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -27,11 +29,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                 "timestamp", Instant.now().toString(),
                 "status", HttpServletResponse.SC_UNAUTHORIZED,
                 "code", "UNAUTHORIZED",
-                "message", authException.getMessage(),
+                "message", "Full authentication is required to access this resource",
+                "traceId", java.util.UUID.randomUUID().toString(),
                 "path", request.getRequestURI()
         );
 
-        final ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), body);
     }
 }

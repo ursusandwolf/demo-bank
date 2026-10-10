@@ -20,7 +20,7 @@ public class UserController {
     }
 
     @GetMapping("/count")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
     public long getUserCount() {
         return userRepository.count();
     }

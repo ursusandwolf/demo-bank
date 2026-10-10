@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20261010-7
+      author: alex
+      changes:
+        # Existing plaintext refresh tokens must be invalidated after switching to hashes.
+        - delete:
+            tableName: refresh_tokens
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: account_locked
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - modifyDataType:
+            tableName: transactions
+            columnName: type
+            newDataType: VARCHAR(20)
+        - addUniqueConstraint:
+            tableName: refresh_tokens
+            columnNames: token
+            constraintName: uk_refresh_token
