@@ -1,17 +1,19 @@
-version: '3.8'
 services:
   db:
     image: postgres:16
-    container_name: bank-db
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       - POSTGRES_DB=bank
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - TZ=UTC
+    volumes:
+      - bank-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d bank"]
       interval: 5s
       timeout: 5s
       retries: 5
+volumes:
+  bank-data:

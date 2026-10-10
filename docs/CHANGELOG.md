@@ -1,5 +1,34 @@
 # Changelog
 
+## Maintenance — 2026-10-10
+
+### Fixed
+- Restored compilation and removed duplicate security/registration bean definitions.
+- Reconciled user authorities, audit fields and locking flags with the Liquibase schema.
+- Enabled public JWT login/refresh/registration, checked account status on token requests and handled malformed/expired tokens as 401.
+- Implemented refresh-token rotation with row locking and SHA-256 storage.
+- Added the missing `account_locked` column, widened transaction types and constrained refresh-token hashes in an additive migration.
+- Added money precision and input length checks, optimistic conflict responses and safe server error messages.
+- Updated tests to JWT authentication, schema validation and transaction isolation; added token lifecycle, rollback and stale-update regression coverage.
+
+### Changed
+- Updated Spring Boot from 3.3.0 to 3.5.16 and JJWT from 0.12.5 to 0.13.0.
+- Required `JWT_SECRET` from the environment; the previous checked-in key must not be reused.
+- Disabled Open Session in View and explicitly scoped account DTO queries to read transactions.
+- Restricted the historical test-user seed to the `demo` Liquibase context.
+- Persisted local PostgreSQL data in a volume and bound its port to the loopback interface.
+- Consolidated development into `dev`; reviewed snapshots use `main`.
+
+### Added
+- GitHub Actions Maven verification, test-report artifacts and weekly Dependabot updates.
+- A portfolio README, API walkthrough, local account fixtures, contribution guide and review report.
+
+### Upgrade notes
+- Set a new private Base64 `JWT_SECRET` before startup.
+- The new migration invalidates existing refresh tokens. Users must log in again.
+- Existing Liquibase changesets are preserved; apply the new changeset normally.
+- New databases do not create the historical demo user unless the `demo` context is selected.
+
 ## [0.0.1] - 2026-06-09
 ### Added
 - Project skeleton (Iteration 0).
