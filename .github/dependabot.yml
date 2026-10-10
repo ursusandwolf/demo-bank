@@ -6,8 +6,15 @@ updates:
       interval: weekly
     target-branch: dev
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: org.springframework.boot:spring-boot-starter-parent
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     target-branch: dev
+    open-pull-requests-limit: 1
+    groups:
+      github-actions:
+        patterns: ['*']
